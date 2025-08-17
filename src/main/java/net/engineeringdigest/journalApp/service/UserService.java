@@ -16,8 +16,8 @@ public class UserService {
     @Autowired
     private UsersRepository usersRepository;
 
-    public void saveEntry(UserEntry entry) {
-        usersRepository.save(entry);
+    public UserEntry saveEntry(UserEntry entry) {
+        return usersRepository.save(entry);
     }
 
     public List<UserEntry> getAllEntries() {
@@ -28,7 +28,7 @@ public class UserService {
         return usersRepository.findById(id);
     }
 
-    public void delteById(ObjectId id) {
+    public void deleteById(ObjectId id) {
         usersRepository.deleteById(id);
     }
 

@@ -2,9 +2,11 @@ package net.engineeringdigest.journalApp.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,16 +30,25 @@ public class AuthController {
     private UserService UserService;
 
     @GetMapping()
-    public List<UserEntry> getAllUsers() {
-        return UserService.getAllEntries();
+    public ResponseEntity<List<UserEntry>> getAllUsers() {
+        List<UserEntry> users = UserService.getAllEntries();
+        if (!users.isEmpty()) {
+            return ResponseEntity.ok().body(users);
+        }
+        return ResponseEntity.ok().body(users);
     }
 
     @PostMapping("/signup")
-    public String createUser(@RequestBody UserEntry entry) {
+    public ResponseEntity<?> createUser(@RequestBody UserEntry entry) {
+        Optional<UserEntry> userAlreadyExist = UserService.getById(entry.getUserId());
+        if (userAlreadyExist.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("User already exists");
+        }
         entry.setCreatedAt(LocalDateTime.now());
         entry.setUpdatedAt(LocalDateTime.now());
-        UserService.saveEntry(entry);
-        return "User added";
+        UserEntry savedUser = UserService.saveEntry(entry);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
     @PostMapping("/{id}")
@@ -48,45 +59,46 @@ public class AuthController {
                     .badRequest()
                     .body("User or input data is missing");
         }
-
         boolean emailMatches = user.getEmail() != null && currentUser.getEmail().equals(user.getEmail());
         boolean phoneNumberMatches = user.getPhoneNumber() != null && currentUser.getPhoneNumber().equals(user.getPhoneNumber());
         boolean passwordMatches = currentUser.getPassword().equals(user.getPassword());
-        System.out.println(emailMatches);
-        System.out.println(phoneNumberMatches);
-        System.out.println(passwordMatches);
-        System.out.println(currentUser.getPassword());
-        System.out.println(user.getPassword());
-
         if ((emailMatches || phoneNumberMatches) && passwordMatches) {
             return ResponseEntity
                     .ok()
                     .body(currentUser);
         } else {
             return ResponseEntity
-                    .status(401)  // Unauthorized
+                    .status(401)
                     .body("Authentication failed: Invalid email/phone or password");
         }
     }
 
-
     @DeleteMapping("/delete/{id}")
-    public String deleteUserById(@PathVariable ObjectId id) {
-        UserService.delteById(id);
-        return "Entry deleted";
+    public ResponseEntity<?> deleteUserById(@PathVariable ObjectId id) {
+        try {
+            UserService.deleteById(id);
+            return ResponseEntity.ok().body("User deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("User deletion failed with exception: " + e.getMessage());
+        }
     }
 
     @PutMapping("/update")
-    public String updateUserById(@RequestBody UserEntry entry){
+    public String updateUserById(@RequestBody UserEntry entry) {
         entry.setUpdatedAt(LocalDateTime.now());
         UserService.saveEntry(entry);
         return "User updated";
     }
 
     @PutMapping("/addFriend")
-    public String addFriendById(@RequestParam ObjectId userId, @RequestParam ObjectId friendId) {
-        UserService.addFriendById(userId, friendId);
-        return "Friend added successfully";
+    public ResponseEntity<?> addFriendById(@RequestParam ObjectId userId, @RequestParam ObjectId friendId) {
+        try {
+
+            UserService.addFriendById(userId, friendId);
+            return ResponseEntity.ok().body("Friend added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Add Friend request failed with exception:" + e.getMessage());
+        }
     }
 
 }
