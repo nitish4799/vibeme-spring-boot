@@ -28,6 +28,10 @@ public class UserService {
         return usersRepository.findById(id);
     }
 
+    // public Optional<UserEntry> getUserByEmail(String email){
+    //     return  usersRepository.findBy(example, queryFunction);
+    // }
+
     public void deleteById(ObjectId id) {
         usersRepository.deleteById(id);
     }
