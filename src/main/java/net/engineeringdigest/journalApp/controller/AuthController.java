@@ -1,6 +1,7 @@
 package net.engineeringdigest.journalApp.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.engineeringdigest.journalApp.entity.ChatEntry;
 import net.engineeringdigest.journalApp.entity.UserEntry;
 import net.engineeringdigest.journalApp.entity.UserLoginEntry;
+import net.engineeringdigest.journalApp.service.ChatService;
 import net.engineeringdigest.journalApp.service.UserService;
 
 @RestController
@@ -28,6 +31,8 @@ public class AuthController {
 
     @Autowired
     private UserService UserService;
+    @Autowired
+    private ChatService chatService;
 
     @GetMapping()
     public ResponseEntity<List<UserEntry>> getAllUsers() {
@@ -40,13 +45,15 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> createUser(@RequestBody UserEntry entry) {
-        Optional<UserEntry> userAlreadyExist = UserService.getById(entry.getUserId());
+        Optional<UserEntry> userAlreadyExist = UserService.findByPhoneNumber(entry.getPhoneNumber());
         if (userAlreadyExist.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("User already exists");
         }
         entry.setCreatedAt(LocalDateTime.now());
         entry.setUpdatedAt(LocalDateTime.now());
+        entry.setFriends(new ArrayList<>());
+        entry.setChats(new ArrayList<>());
         UserEntry savedUser = UserService.saveEntry(entry);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
@@ -84,17 +91,34 @@ public class AuthController {
     }
 
     @PutMapping("/update")
-    public String updateUserById(@RequestBody UserEntry entry) {
-        entry.setUpdatedAt(LocalDateTime.now());
-        UserService.saveEntry(entry);
-        return "User updated";
+    public ResponseEntity<?> updateUserById(@RequestBody UserEntry entry) {
+        Optional<UserEntry> userOptional = UserService.findByPhoneNumber(entry.getPhoneNumber());
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        UserEntry user = userOptional.get();
+        user.setUpdatedAt(LocalDateTime.now());
+        if (entry.getEmail() != null) {
+            user.setEmail(entry.getEmail());
+        }
+        if (!entry.getPassword().isEmpty()) {
+            user.setPassword(entry.getPassword());
+        }
+        try {
+            UserEntry updatedUser = UserService.saveEntry(user);
+            return ResponseEntity.ok().body(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("User update failed with error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/addFriend")
-    public ResponseEntity<?> addFriendById(@RequestParam ObjectId userId, @RequestParam ObjectId friendId) {
+    public ResponseEntity<?> addFriendById(@RequestParam String userPhoneNumber, @RequestParam String friendPhoneNumber) {
         try {
-
-            UserService.addFriendById(userId, friendId);
+            ChatEntry chatEntry = new ChatEntry();
+            chatEntry.setCreatedAt(LocalDateTime.now());
+            ChatEntry chat = chatService.saveEntry(chatEntry);
+            UserService.addFriendById(userPhoneNumber, friendPhoneNumber, chat);
             return ResponseEntity.ok().body("Friend added successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Add Friend request failed with exception:" + e.getMessage());

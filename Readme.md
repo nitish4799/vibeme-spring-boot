@@ -13,3 +13,12 @@
 ```bash
     mvn spring-boot:run
 ```
+
+```bash
+    mongosh
+    show dbs
+    use vibeme
+    show collections
+    db.users.find()
+    db.users.deleteMany({})
+```
