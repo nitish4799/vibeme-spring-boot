@@ -1,5 +1,6 @@
 package net.engineeringdigest.journalApp.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,33 +32,50 @@ public class UserService {
     }
 
     public Optional<UserEntry> findByPhoneNumber(String phoneNumber) {
-       return  usersRepository.findByPhoneNumber(phoneNumber);
+        return usersRepository.findByPhoneNumber(phoneNumber);
     }
 
     public void deleteById(ObjectId id) {
         usersRepository.deleteById(id);
     }
 
-    public void addFriendById(String userPhoneNumber, String friendPhoneNumber, ChatEntry chat){
+    public void addFriendById(String userPhoneNumber, String friendPhoneNumber, ChatEntry chat) {
         Optional<UserEntry> currentUserOptional = findByPhoneNumber(userPhoneNumber);
         Optional<UserEntry> friendUserOptional = findByPhoneNumber(friendPhoneNumber);
-        if ( !currentUserOptional.isPresent() ||  !friendUserOptional.isPresent()){
+        if (!currentUserOptional.isPresent() || !friendUserOptional.isPresent()) {
             return;
         }
         UserEntry currentUser = currentUserOptional.get();
         UserEntry friendUser = friendUserOptional.get();
-        List<ObjectId> userFriendsList =  currentUser.getFriends();
-        List<ObjectId> friendFriendsList =  friendUser.getFriends();
+        List<ObjectId> userFriendsList = currentUser.getFriends();
+        List<ObjectId> friendFriendsList = friendUser.getFriends();
         List<ChatEntry> userChats = currentUser.getChats();
         List<ChatEntry> friendChats = friendUser.getChats();
-        userFriendsList.add(friendUser.getUserId());
-        friendFriendsList.add(currentUser.getUserId());
-        userChats.add(chat);
-        friendChats.add(chat);
+        if (!userFriendsList.contains(friendUser.getUserId())) {
+            userFriendsList.add(friendUser.getUserId());
+        }
+        if (!friendFriendsList.contains(currentUser.getUserId())) {
+            friendFriendsList.add(currentUser.getUserId());
+        }
+        if (!userChats.contains(chat)) {
+            userChats.add(chat);
+        }
+        if (!friendChats.contains(chat)) {
+            friendChats.add(chat);
+        }
         currentUser.setFriends(userFriendsList);
+        friendUser.setFriends(friendFriendsList);
         currentUser.setChats(userChats);
         friendUser.setChats(friendChats);
-        friendUser.setFriends(friendFriendsList);
+        if (currentUser.getFriendChatMap() == null) {
+            currentUser.setFriendChatMap(new HashMap<>());
+        }
+        if (friendUser.getFriendChatMap() == null) {
+            friendUser.setFriendChatMap(new HashMap<>());
+        }
+        // Put the mappings friendId -> chatId
+        currentUser.getFriendChatMap().put(friendUser.getUserId(), chat.getChatId());
+        friendUser.getFriendChatMap().put(currentUser.getUserId(), chat.getChatId());
         saveEntry(currentUser);
         saveEntry(friendUser);
     }

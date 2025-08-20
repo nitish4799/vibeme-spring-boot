@@ -1,25 +1,32 @@
-// package net.engineeringdigest.journalApp.controller;
+package net.engineeringdigest.journalApp.controller;
 
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.web.bind.annotation.PostMapping;
-// import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
-// import net.engineeringdigest.journalApp.entity.MessageEntry;
-// import net.engineeringdigest.journalApp.service.MessageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-// @RestController
-// @RequestMapping("/messages")
-// public class MessageController {
-//     @Autowired
-//     private MessageService messageService;
+import net.engineeringdigest.journalApp.entity.MessageEntry;
+import net.engineeringdigest.journalApp.service.MessageService;
 
-// //    @PostMapping("/send")
-// //    public void sendMessage(MessageEntry message) {
-// //        messageService.saveMessage(message);
-// //    }
+@RestController
+@RequestMapping("/messages")
+public class MessageController {
+    @Autowired
+    private MessageService messageService;
 
-//     // public void getMessagesByUsername(ChatService chat){
+    @GetMapping
+    public List<MessageEntry> getAll() {
+        return messageService.getAllMesages();
+    }
 
-//     // }
-// }
+//    @PostMapping("/send")
+//    public void sendMessage(MessageEntry message) {
+//        messageService.saveMessage(message);
+//    }
+
+    // public void getMessagesByUsername(ChatService chat){
+
+    // }
+}

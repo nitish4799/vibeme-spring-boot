@@ -2,7 +2,9 @@ package net.engineeringdigest.journalApp.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -29,6 +31,7 @@ public class UserEntry {
     @NonNull
     private String password;
     private List<ObjectId> friends;
+    private Map<ObjectId, ObjectId> friendChatMap = new HashMap<>();
     @DBRef
     private List<ChatEntry> chats = new ArrayList<>();
     private LocalDateTime createdAt;
