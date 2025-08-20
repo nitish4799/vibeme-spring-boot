@@ -22,3 +22,9 @@
     db.users.find()
     db.users.deleteMany({})
 ```
+
+
+# heirarchy of functional calling: 
+
+controller -> service -> repository
+scheema = entity e.g.: chatEntry, userEntry

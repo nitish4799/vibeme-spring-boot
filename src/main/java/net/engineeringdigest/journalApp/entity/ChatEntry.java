@@ -1,14 +1,16 @@
 package net.engineeringdigest.journalApp.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Document(collection = "chats")
 @Getter
@@ -18,5 +20,5 @@ public class ChatEntry {
     private ObjectId chatId;
     private LocalDateTime createdAt;
     @DBRef
-    private List<ObjectId> messages;
+    private List<MessageEntry> messages = new ArrayList<>();
 }

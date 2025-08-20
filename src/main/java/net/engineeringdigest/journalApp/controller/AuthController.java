@@ -53,7 +53,6 @@ public class AuthController {
         entry.setCreatedAt(LocalDateTime.now());
         entry.setUpdatedAt(LocalDateTime.now());
         entry.setFriends(new ArrayList<>());
-        entry.setChats(new ArrayList<>());
         UserEntry savedUser = UserService.saveEntry(entry);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }

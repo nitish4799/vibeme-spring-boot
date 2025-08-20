@@ -48,12 +48,12 @@ public class UserService {
         UserEntry friendUser = friendUserOptional.get();
         List<ObjectId> userFriendsList =  currentUser.getFriends();
         List<ObjectId> friendFriendsList =  friendUser.getFriends();
-        List<ObjectId> userChats = currentUser.getChats();
-        List<ObjectId> friendChats = friendUser.getChats();
+        List<ChatEntry> userChats = currentUser.getChats();
+        List<ChatEntry> friendChats = friendUser.getChats();
         userFriendsList.add(friendUser.getUserId());
         friendFriendsList.add(currentUser.getUserId());
-        userChats.add(chat.getChatId());
-        friendChats.add(chat.getChatId());
+        userChats.add(chat);
+        friendChats.add(chat);
         currentUser.setFriends(userFriendsList);
         currentUser.setChats(userChats);
         friendUser.setChats(friendChats);
