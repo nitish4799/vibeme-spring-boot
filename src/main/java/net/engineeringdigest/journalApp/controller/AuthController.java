@@ -119,21 +119,20 @@ public class AuthController {
     @PutMapping("/addFriend")
     public ResponseEntity<?> addFriendById(@RequestParam String userPhoneNumber, @RequestParam String friendPhoneNumber) {
         try {
-            ChatEntry chatEntry = new ChatEntry();
-            chatEntry.setCreatedAt(LocalDateTime.now());
-            ChatEntry chat = chatService.saveEntry(chatEntry);
-            UserService.addFriendById(userPhoneNumber, friendPhoneNumber, chat);
+        
+            UserService.addFriendById(userPhoneNumber, friendPhoneNumber);
             return ResponseEntity.ok().body("Friend added successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Add Friend request failed with exception:" + e.getMessage());
         }
     }
 
+// need to be transactional ??
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String userPhone, @RequestParam String friendPhone) {
         Optional<UserEntry> userOptional = UserService.findByPhoneNumber(userPhone);
         Optional<UserEntry> friendOptional = UserService.findByPhoneNumber(friendPhone);
-        if (userOptional.isEmpty() || friendOptional.isEmpty()) {
+        if (!userOptional.isPresent() || !friendOptional.isPresent()) {
             return ResponseEntity.badRequest().body("User or friend not found");
         }
         UserEntry user = userOptional.get();
@@ -144,7 +143,7 @@ public class AuthController {
         }
         ObjectId chatId = friendChatMap.get(friend.getUserId());
         Optional<ChatEntry> chatOptional = chatService.getChatById(chatId);
-        if ( chatOptional.isEmpty()){
+        if ( !chatOptional.isPresent()){
             return ResponseEntity.badRequest().body("Chat not Found");
         }
         ChatEntry chat = chatOptional.get();
