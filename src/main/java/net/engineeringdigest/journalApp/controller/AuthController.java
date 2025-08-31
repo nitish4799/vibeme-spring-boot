@@ -111,7 +111,9 @@ public class AuthController {
 
     // need to be transactional ??
     @PostMapping("/send")
-    public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String userPhone, @RequestParam String friendPhone) {
+    public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String friendPhone) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userPhone = auth.getName();
         UserEntry user = UserService.findByPhoneNumber(userPhone);
         UserEntry friend = UserService.findByPhoneNumber(friendPhone);
         Map<ObjectId, ObjectId> friendChatMap = user.getFriendChatMap();
