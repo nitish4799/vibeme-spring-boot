@@ -1,14 +1,12 @@
 package net.engineeringdigest.journalApp.controller;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,19 +46,7 @@ public class AuthController {
         return ResponseEntity.ok().body(users);
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> createUser(@RequestBody UserEntry entry) {
-        Optional<UserEntry> userAlreadyExist = UserService.findByPhoneNumber(entry.getPhoneNumber());
-        if (userAlreadyExist.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("User already exists");
-        }
-        entry.setCreatedAt(LocalDateTime.now());
-        entry.setUpdatedAt(LocalDateTime.now());
-        entry.setFriends(new ArrayList<>());
-        UserEntry savedUser = UserService.saveEntry(entry);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-    }
+
 
     @PostMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable ObjectId id, @RequestBody UserLoginEntry user) {
@@ -96,11 +82,7 @@ public class AuthController {
 
     @PutMapping("/update")
     public ResponseEntity<?> updateUserById(@RequestBody UserEntry entry) {
-        Optional<UserEntry> userOptional = UserService.findByPhoneNumber(entry.getPhoneNumber());
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-        UserEntry user = userOptional.get();
+        UserEntry user = UserService.findByPhoneNumber(entry.getPhoneNumber());
         user.setUpdatedAt(LocalDateTime.now());
         if (entry.getEmail() != null) {
             user.setEmail(entry.getEmail());
@@ -130,13 +112,8 @@ public class AuthController {
 // need to be transactional ??
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String userPhone, @RequestParam String friendPhone) {
-        Optional<UserEntry> userOptional = UserService.findByPhoneNumber(userPhone);
-        Optional<UserEntry> friendOptional = UserService.findByPhoneNumber(friendPhone);
-        if (!userOptional.isPresent() || !friendOptional.isPresent()) {
-            return ResponseEntity.badRequest().body("User or friend not found");
-        }
-        UserEntry user = userOptional.get();
-        UserEntry friend = friendOptional.get();
+        UserEntry user = UserService.findByPhoneNumber(userPhone);
+        UserEntry friend = UserService.findByPhoneNumber(friendPhone);
         Map<ObjectId, ObjectId> friendChatMap = user.getFriendChatMap();
         if (friendChatMap == null || !friendChatMap.containsKey(friend.getUserId())) {
             return ResponseEntity.badRequest().body("Chat not found between users");

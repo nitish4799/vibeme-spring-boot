@@ -34,6 +34,7 @@ public class UserEntry {
     private Map<ObjectId, ObjectId> friendChatMap = new HashMap<>();
     @DBRef
     private List<ChatEntry> chats = new ArrayList<>();
+    private List<String> roles = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
