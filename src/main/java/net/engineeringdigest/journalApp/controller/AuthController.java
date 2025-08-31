@@ -2,8 +2,6 @@ package net.engineeringdigest.journalApp.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.engineeringdigest.journalApp.entity.ChatEntry;
-import net.engineeringdigest.journalApp.entity.MessageEntry;
 import net.engineeringdigest.journalApp.entity.UserEntry;
 import net.engineeringdigest.journalApp.entity.UserLoginEntry;
-import net.engineeringdigest.journalApp.service.ChatService;
-import net.engineeringdigest.journalApp.service.MessageService;
 import net.engineeringdigest.journalApp.service.UserService;
 
 @RestController
@@ -34,10 +28,6 @@ public class AuthController {
 
     @Autowired
     private UserService UserService;
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private MessageService messageService;
 
     @GetMapping()
     public ResponseEntity<List<UserEntry>> getAllUsers() {
@@ -109,29 +99,5 @@ public class AuthController {
         }
     }
 
-    // need to be transactional ??
-    @PostMapping("/send")
-    public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String friendPhone) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userPhone = auth.getName();
-        UserEntry user = UserService.findByPhoneNumber(userPhone);
-        UserEntry friend = UserService.findByPhoneNumber(friendPhone);
-        Map<ObjectId, ObjectId> friendChatMap = user.getFriendChatMap();
-        if (friendChatMap == null || !friendChatMap.containsKey(friend.getUserId())) {
-            return ResponseEntity.badRequest().body("Chat not found between users");
-        }
-        ObjectId chatId = friendChatMap.get(friend.getUserId());
-        Optional<ChatEntry> chatOptional = chatService.getChatById(chatId);
-        if ( !chatOptional.isPresent()){
-            return ResponseEntity.badRequest().body("Chat not Found");
-        }
-        ChatEntry chat = chatOptional.get();
-        List<MessageEntry> oldMsgs = chat.getMessages();
-        MessageEntry msg = messageService.saveMessage(message);
-        oldMsgs.add(msg);
-        chat.setMessages(oldMsgs);
-        chatService.saveEntry(chat);
-        return ResponseEntity.ok().body(chat.getMessages());
-    }
 
 }

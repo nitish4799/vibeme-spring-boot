@@ -23,7 +23,7 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/chats/**", "/users/**").authenticated()
+                .antMatchers("/chats/**", "/users/**", "/messages/**").authenticated()
                 .anyRequest().permitAll()
                 .and()
                 .httpBasic();
