@@ -8,6 +8,8 @@ import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,10 @@ public class UserService {
     @Autowired
     private ChatService chatService;
 
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     public UserEntry saveEntry(UserEntry entry) {
+        entry.setPassword(passwordEncoder.encode(entry.getPassword()));
         return usersRepository.save(entry);
     }
 
@@ -36,7 +41,7 @@ public class UserService {
         return usersRepository.findById(id);
     }
 
-    public Optional<UserEntry> findByPhoneNumber(String phoneNumber) {
+    public UserEntry findByPhoneNumber(String phoneNumber) {
         return usersRepository.findByPhoneNumber(phoneNumber);
     }
 
@@ -52,15 +57,18 @@ public class UserService {
         ChatEntry savedChat = chatService.saveEntry(chatEntry);
 
         // Step 2: Get users
-        Optional<UserEntry> currentUserOptional = findByPhoneNumber(userPhoneNumber);
-        Optional<UserEntry> friendUserOptional = findByPhoneNumber(friendPhoneNumber);
+        // Optional<UserEntry> currentUserOptional = findByPhoneNumber(userPhoneNumber);
+        // Optional<UserEntry> friendUserOptional = findByPhoneNumber(friendPhoneNumber);
 
-        if (!currentUserOptional.isPresent() || !friendUserOptional.isPresent()) {
-            return;
-        }
+        // if (!currentUserOptional.isPresent() || !friendUserOptional.isPresent()) {
+        //     return;
+        // }
 
-        UserEntry currentUser = currentUserOptional.get();
-        UserEntry friendUser = friendUserOptional.get();
+        // UserEntry currentUser = currentUserOptional.get();
+        // UserEntry friendUser = friendUserOptional.get();
+
+        UserEntry currentUser = findByPhoneNumber(userPhoneNumber);
+        UserEntry friendUser = findByPhoneNumber(friendPhoneNumber);
 
         // Step 3: Initialize collections if null
         if (currentUser.getFriends() == null) {

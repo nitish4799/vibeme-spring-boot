@@ -28,3 +28,20 @@
 
 controller -> service -> repository
 scheema = entity e.g.: chatEntry, userEntry
+
+
+# Spring documentation
+
+## Spring Security
+
+- By default, Spring uses HTTP based Basic Authentication.
+- Basic Authentication is Stateless.
+
+# TODOs:
+
+- add 'roles' in user entity for authorization.
+
+# UserEntity
+
+- username and phoneNumber are same things here.
+

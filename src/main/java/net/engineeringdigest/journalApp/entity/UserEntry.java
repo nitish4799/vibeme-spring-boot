@@ -36,4 +36,5 @@ public class UserEntry {
     private List<ChatEntry> chats = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<String> roles = new ArrayList<>();
 }

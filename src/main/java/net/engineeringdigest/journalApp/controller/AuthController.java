@@ -50,8 +50,8 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> createUser(@RequestBody UserEntry entry) {
-        Optional<UserEntry> userAlreadyExist = UserService.findByPhoneNumber(entry.getPhoneNumber());
-        if (userAlreadyExist.isPresent()) {
+        UserEntry userAlreadyExist = UserService.findByPhoneNumber(entry.getPhoneNumber());
+        if (userAlreadyExist != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("User already exists");
         }
@@ -96,11 +96,10 @@ public class AuthController {
 
     @PutMapping("/update")
     public ResponseEntity<?> updateUserById(@RequestBody UserEntry entry) {
-        Optional<UserEntry> userOptional = UserService.findByPhoneNumber(entry.getPhoneNumber());
-        if (!userOptional.isPresent()) {
+        UserEntry user = UserService.findByPhoneNumber(entry.getPhoneNumber());
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        UserEntry user = userOptional.get();
         user.setUpdatedAt(LocalDateTime.now());
         if (entry.getEmail() != null) {
             user.setEmail(entry.getEmail());
@@ -119,7 +118,6 @@ public class AuthController {
     @PutMapping("/addFriend")
     public ResponseEntity<?> addFriendById(@RequestParam String userPhoneNumber, @RequestParam String friendPhoneNumber) {
         try {
-        
             UserService.addFriendById(userPhoneNumber, friendPhoneNumber);
             return ResponseEntity.ok().body("Friend added successfully");
         } catch (Exception e) {
@@ -130,13 +128,15 @@ public class AuthController {
 // need to be transactional ??
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String userPhone, @RequestParam String friendPhone) {
-        Optional<UserEntry> userOptional = UserService.findByPhoneNumber(userPhone);
-        Optional<UserEntry> friendOptional = UserService.findByPhoneNumber(friendPhone);
-        if (!userOptional.isPresent() || !friendOptional.isPresent()) {
-            return ResponseEntity.badRequest().body("User or friend not found");
-        }
-        UserEntry user = userOptional.get();
-        UserEntry friend = friendOptional.get();
+        // Optional<UserEntry> userOptional = UserService.findByPhoneNumber(userPhone);
+        // Optional<UserEntry> friendOptional = UserService.findByPhoneNumber(friendPhone);
+        // if (!userOptional.isPresent() || !friendOptional.isPresent()) {
+        //     return ResponseEntity.badRequest().body("User or friend not found");
+        // }
+        // UserEntry user = userOptional.get();
+        // UserEntry friend = friendOptional.get();
+        UserEntry user = UserService.findByPhoneNumber(userPhone);
+        UserEntry friend = UserService.findByPhoneNumber(friendPhone);
         Map<ObjectId, ObjectId> friendChatMap = user.getFriendChatMap();
         if (friendChatMap == null || !friendChatMap.containsKey(friend.getUserId())) {
             return ResponseEntity.badRequest().body("Chat not found between users");

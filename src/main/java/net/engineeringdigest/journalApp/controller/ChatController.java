@@ -2,7 +2,6 @@ package net.engineeringdigest.journalApp.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +24,9 @@ public class ChatController {
 
     @GetMapping("/{phoneNumber}")
     public List<ChatEntry> getChatsByPhoneNumber(@PathVariable String phoneNumber) {
-        Optional<UserEntry> userOptional = userService.findByPhoneNumber(phoneNumber);
-        if (!userOptional.isPresent()) return new ArrayList<>();
-        UserEntry user = userOptional.get();
+        UserEntry user = userService.findByPhoneNumber(phoneNumber);
+        if (user == null ) return new ArrayList<>();
+        // UserEntry user = userOptional.get();
         List<ChatEntry> chats = user.getChats();
         return chats;
     }
