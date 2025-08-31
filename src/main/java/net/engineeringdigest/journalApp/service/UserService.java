@@ -1,7 +1,11 @@
 package net.engineeringdigest.journalApp.service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +36,7 @@ public class UserService {
 
     public UserEntry saveNewEntry(UserEntry entry) {
         entry.setPassword(passwordEncoder.encode(entry.getPassword()));
-        entry.setRoles(Arrays.asList("User", "Admin"));
+        entry.setRoles(Arrays.asList("User"));
         return usersRepository.save(entry);
     }
 
@@ -48,22 +52,21 @@ public class UserService {
         return usersRepository.findByPhoneNumber(phoneNumber);
     }
 
+    public UserEntry findByEmail(String email) {
+        return usersRepository.findByEmail(email);
+    }
+
     public void deleteById(ObjectId id) {
         usersRepository.deleteById(id);
     }
 
     @Transactional
-    public void addFriendById(String userPhoneNumber, String friendPhoneNumber) {
-        // Step 1: Create and save chat FIRST
-        ChatEntry chatEntry = new ChatEntry();
-        chatEntry.setCreatedAt(LocalDateTime.now());
-        ChatEntry savedChat = chatService.saveEntry(chatEntry);
-
-        // Step 2: Get users
+    public String addFriendById(String userPhoneNumber, String friendPhoneNumber) {
+        // Step 1: Get users
         UserEntry currentUser = findByPhoneNumber(userPhoneNumber);
         UserEntry friendUser = findByPhoneNumber(friendPhoneNumber);
-
-        // Step 3: Initialize collections if null
+        
+        // Step 2: Initialize collections if null
         if (currentUser.getFriends() == null) {
             currentUser.setFriends(new ArrayList<>());
         }
@@ -77,13 +80,18 @@ public class UserService {
             friendUser.setChats(new ArrayList<>());
         }
 
-        // Step 4: Add friends
-        if (!currentUser.getFriends().contains(friendUser.getUserId())) {
-            currentUser.getFriends().add(friendUser.getUserId());
+        // Step 3: Add Friends if not already
+        if ( currentUser.getFriends().contains(friendUser.getUserId())){
+            return "Already Friends";
         }
-        if (!friendUser.getFriends().contains(currentUser.getUserId())) {
-            friendUser.getFriends().add(currentUser.getUserId());
-        }
+        currentUser.getFriends().add(friendUser.getUserId());
+        friendUser.getFriends().add(currentUser.getUserId());
+
+        // Step 1: Create and save chat FIRST
+        ChatEntry chatEntry = new ChatEntry();
+        chatEntry.setCreatedAt(LocalDateTime.now());
+        ChatEntry savedChat = chatService.saveEntry(chatEntry);
+
 
         // Step 5: Add the SAVED chat to both users (key point!)
         boolean chatExistsInCurrentUser = currentUser.getChats().stream()
@@ -112,5 +120,6 @@ public class UserService {
         // Step 7: Save users (this will create the DBRef links)
         saveEntry(currentUser);
         saveEntry(friendUser);
+        return  "Friends added successfully.";
     }
 }

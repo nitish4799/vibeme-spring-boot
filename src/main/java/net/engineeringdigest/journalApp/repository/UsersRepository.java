@@ -8,4 +8,6 @@ import net.engineeringdigest.journalApp.entity.UserEntry;
 
 public interface UsersRepository extends MongoRepository<UserEntry, ObjectId> {
     UserEntry findByPhoneNumber(String phoneNumber);
+
+    UserEntry findByEmail(String email);
 }

@@ -1,7 +1,8 @@
 package net.engineeringdigest.journalApp.controller;
 
-import net.engineeringdigest.journalApp.entity.UserEntry;
-import net.engineeringdigest.journalApp.service.UserService;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,28 +11,33 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import net.engineeringdigest.journalApp.entity.UserEntry;
+import net.engineeringdigest.journalApp.service.UserService;
 
 @RestController
-public class HealthCheck {
+public class PublicController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping("/check")
+    @GetMapping("/status")
     public ResponseEntity<String> fun() {
         return ResponseEntity
                 .ok()
-                .body("RunningSmoothly");
+                .body("Vibe me is properly functional.");
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> createUser(@RequestBody UserEntry entry) {
-        UserEntry userAlreadyExist = userService.findByPhoneNumber(entry.getPhoneNumber());
-        if (userAlreadyExist != null) {
+        UserEntry phoneAlreadyExist = userService.findByPhoneNumber(entry.getPhoneNumber());
+        UserEntry emailAlreadyExist = userService.findByEmail(entry.getEmail());
+        if (phoneAlreadyExist != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("User already exists");
+                    .body("Phone Number already registered.");
+        }
+        if (emailAlreadyExist != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Email already registered.");
         }
         entry.setCreatedAt(LocalDateTime.now());
         entry.setUpdatedAt(LocalDateTime.now());

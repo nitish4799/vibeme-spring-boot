@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,9 +42,6 @@ public class AuthController {
     @GetMapping()
     public ResponseEntity<List<UserEntry>> getAllUsers() {
         List<UserEntry> users = UserService.getAllEntries();
-        if (!users.isEmpty()) {
-            return ResponseEntity.ok().body(users);
-        }
         return ResponseEntity.ok().body(users);
     }
 
@@ -99,17 +98,18 @@ public class AuthController {
     }
 
     @PutMapping("/addFriend")
-    public ResponseEntity<?> addFriendById(@RequestParam String userPhoneNumber, @RequestParam String friendPhoneNumber) {
+    public ResponseEntity<?> addFriendById( @RequestParam String friendPhoneNumber) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userPhoneNumber = auth.getName();
         try {
-        
-            UserService.addFriendById(userPhoneNumber, friendPhoneNumber);
-            return ResponseEntity.ok().body("Friend added successfully");
+            String resMessage = UserService.addFriendById(userPhoneNumber, friendPhoneNumber);
+            return ResponseEntity.ok().body(resMessage);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Add Friend request failed with exception:" + e.getMessage());
         }
     }
 
-// need to be transactional ??
+    // need to be transactional ??
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageEntry message, @RequestParam String userPhone, @RequestParam String friendPhone) {
         UserEntry user = UserService.findByPhoneNumber(userPhone);
