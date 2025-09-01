@@ -36,9 +36,6 @@ scheema = entity e.g.: chatEntry, userEntry
 - By default, Spring uses HTTP based Basic Authentication.
 - Basic Authentication is Stateless.
 
-# TODOs:
-
-- add 'roles' in user entity for authorization.
 
 # UserEntity
 
